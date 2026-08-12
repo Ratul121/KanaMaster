@@ -6,6 +6,7 @@
     <title>Kana Practice App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -996,8 +997,8 @@
                         <i data-lucide="pencil" class="w-4 h-4"></i> Edit Name on Certificate
                     </button>` : ''}
                     ${isEligible ? `
-                    <button data-action="share-cert" class="w-full py-4 bg-rose-500 hover:bg-rose-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200 flex items-center justify-center gap-2 active:scale-95">
-                        <i data-lucide="share-2" class="w-5 h-5"></i> Share Achievement
+                    <button data-action="download-cert" class="w-full py-4 bg-rose-500 hover:bg-rose-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200 flex items-center justify-center gap-2 active:scale-95">
+                        <i data-lucide="download" class="w-5 h-5"></i> Download Certificate (PNG)
                     </button>` : `
                     <button data-action="go-setup" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 active:scale-95">
                         <i data-lucide="play" class="w-5 h-5"></i> Keep Practicing
@@ -1097,37 +1098,59 @@
                 saveToStorage();
                 render();
             }
-            else if (action === 'share-cert') {
-                const percent = getMasteryStats();
-                const shareText = `I just achieved ${percent === 100 ? 'Kana Master status' : `${percent}% Mastery`} on Kana Practice App! 🎓✨\n\nName: ${state.userName}\nCan you beat my score?`;
+            else if (action === 'download-cert') {
+                const btn = target;
+                const originalContent = btn.innerHTML;
+                const toast = document.getElementById('toast-msg');
                 
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Kana Master Certificate',
-                        text: shareText,
-                        url: window.location.href
-                    }).catch(err => console.log('Share canceled or failed.'));
-                } else {
-                    // Fallback to clipboard
-                    const tempInput = document.createElement("textarea");
-                    tempInput.value = shareText;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand("copy");
-                    document.body.removeChild(tempInput);
-                    
-                    const toast = document.getElementById('toast-msg');
-                    toast.innerText = "Text copied to clipboard! Take a screenshot to share the beautiful image.";
-                    toast.classList.remove('hidden');
-                    // Force reflow for fade in
-                    void toast.offsetWidth;
-                    toast.classList.remove('opacity-0');
-                    
-                    setTimeout(() => {
-                        toast.classList.add('opacity-0');
-                        setTimeout(() => toast.classList.add('hidden'), 300);
-                    }, 4000);
-                }
+                // Show loading state
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generating PNG...`;
+                btn.disabled = true;
+                lucide.createIcons();
+                
+                const certCard = document.getElementById('certificate-card');
+                
+                // Use html2canvas to capture the certificate
+                setTimeout(() => {
+                    html2canvas(certCard, {
+                        scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
+                        backgroundColor: null,
+                        useCORS: true,
+                        logging: false
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        const cleanName = (state.userName || 'Kana_Master').replace(/\s+/g, '_');
+                        link.download = `Certificate_${cleanName}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        toast.innerText = "Certificate downloaded successfully! 🌸";
+                        toast.classList.remove('hidden');
+                        void toast.offsetWidth;
+                        toast.classList.remove('opacity-0');
+                        
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0');
+                            setTimeout(() => toast.classList.add('hidden'), 300);
+                        }, 4000);
+                    }).catch(err => {
+                        console.error('Error generating PNG:', err);
+                        toast.innerText = "Failed to generate PNG. Please take a screenshot.";
+                        toast.classList.remove('hidden');
+                        void toast.offsetWidth;
+                        toast.classList.remove('opacity-0');
+                        
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0');
+                            setTimeout(() => toast.classList.add('hidden'), 300);
+                        }, 4000);
+                    }).finally(() => {
+                        // Restore button
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                        lucide.createIcons();
+                    });
+                }, 100);
             }
         });
 
@@ -1159,6 +1182,28 @@
                 render();
             }
         });
+
+        // ── TEST DATA (remove when done) ──────────────────────────────────────
+        (function injectTestData() {
+            const allKana = [
+                'あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
+                'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
+                'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん',
+                'が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど',
+                'ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ',
+                'ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ',
+                'タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ',
+                'マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン',
+                'ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','ヂ','ヅ','デ','ド',
+                'バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'
+            ];
+            const stats = {};
+            allKana.forEach(k => { stats[k] = { correct: 3, wrong: 1, time: 15000, attempts: 4 }; });
+            localStorage.setItem('kana_master_v1', JSON.stringify({
+                stats, userName: '', theme: 'light', mode: 'mcq', kanaSet: 'both'
+            }));
+        })();
+        // ─────────────────────────────────────────────────────────────────────────
 
         // Initialize App
         loadFromStorage(); // restore saved progress before first render
