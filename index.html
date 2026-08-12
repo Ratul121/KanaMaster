@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kana Practice App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .font-cert { font-family: 'Playfair Display', serif; }
+        
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floatA { 0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-18px) rotate(-6deg)} }
+        @keyframes floatB { 0%,100%{transform:translateY(0) rotate(8deg)} 50%{transform:translateY(-24px) rotate(8deg)} }
+        @keyframes floatC { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-14px) rotate(-3deg)} }
+        @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+
+        .animate-fade-in { animation: fadeInScale 0.3s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .float-a { animation: floatA 4s ease-in-out infinite; }
+        .float-b { animation: floatB 5.5s ease-in-out infinite; }
+        .float-c { animation: floatC 3.8s ease-in-out infinite; }
+        .shimmer-text {
+            background: linear-gradient(90deg, #6366f1, #a78bfa, #818cf8, #6366f1);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+        
+        /* Custom scrollbar for mistakes list */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #334155; }
+
+        /* Certificate Gold Foil Effect */
+        .gold-foil {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Safe area insets for notched phones */
+        #app {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            padding-left: max(0.5rem, env(safe-area-inset-left));
+            padding-right: max(0.5rem, env(safe-area-inset-right));
+        }
+
+        /* Prevent text size inflation on iOS */
+        html { -webkit-text-size-adjust: 100%; }
+
+        /* Better touch targets — avoid tiny tap areas */
+        button { touch-action: manipulation; }
+
+        /* Smooth momentum scrolling on iOS */
+        .overflow-y-auto { -webkit-overflow-scrolling: touch; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 selection:bg-indigo-200 dark:selection:bg-indigo-500/30">
+
+    <div id="app" class="min-h-screen flex flex-col items-center py-3 md:py-6 px-3 md:px-4">
+        
+        <!-- Navigation Bar -->
+        <div class="w-full max-w-3xl flex justify-between items-center mb-4 md:mb-8 py-2.5 px-4 md:py-2 md:px-2 md:pl-6 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 backdrop-blur-md sticky top-2 md:top-4 z-50 shadow-sm shadow-slate-200/50 dark:shadow-black/20">
+            <button data-action="go-intro" class="text-sm md:text-xl font-black bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate pr-2 hover:opacity-80 transition-opacity active:scale-95">
+                Kana Master
+            </button>
+            
+            <div class="flex items-center gap-1 md:gap-2" id="nav-actions">
+                <!-- Nav buttons injected via JS -->
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="w-full flex-1 flex flex-col justify-start md:justify-center">
+            <!-- Dynamic content injected here -->
+        </main>
+    </div>
+
+    <script>
+        const hiraganaData = [
+            { kana: 'あ', romaji: 'a' }, { kana: 'い', romaji: 'i' }, { kana: 'う', romaji: 'u' }, { kana: 'え', romaji: 'e' }, { kana: 'お', romaji: 'o' },
+            { kana: 'か', romaji: 'ka' }, { kana: 'き', romaji: 'ki' }, { kana: 'く', romaji: 'ku' }, { kana: 'け', romaji: 'ke' }, { kana: 'こ', romaji: 'ko' },
+            { kana: 'さ', romaji: 'sa' }, { kana: 'し', romaji: 'shi' }, { kana: 'す', romaji: 'su' }, { kana: 'せ', romaji: 'se' }, { kana: 'そ', romaji: 'so' },
+            { kana: 'た', romaji: 'ta' }, { kana: 'ち', romaji: 'chi' }, { kana: 'つ', romaji: 'tsu' }, { kana: 'て', romaji: 'te' }, { kana: 'と', romaji: 'to' },
+            { kana: 'な', romaji: 'na' }, { kana: 'に', romaji: 'ni' }, { kana: 'ぬ', romaji: 'nu' }, { kana: 'ね', romaji: 'ne' }, { kana: 'の', romaji: 'no' },
+            { kana: 'は', romaji: 'ha' }, { kana: 'ひ', romaji: 'hi' }, { kana: 'ふ', romaji: 'fu' }, { kana: 'へ', romaji: 'he' }, { kana: 'ほ', romaji: 'ho' },
+            { kana: 'ま', romaji: 'ma' }, { kana: 'み', romaji: 'mi' }, { kana: 'む', romaji: 'mu' }, { kana: 'め', romaji: 'me' }, { kana: 'も', romaji: 'mo' },
+            { kana: 'や', romaji: 'ya' }, { kana: 'ゆ', romaji: 'yu' }, { kana: 'よ', romaji: 'yo' },
+            { kana: 'ら', romaji: 'ra' }, { kana: 'り', romaji: 'ri' }, { kana: 'る', romaji: 'ru' }, { kana: 'れ', romaji: 're' }, { kana: 'ろ', romaji: 'ro' },
+            { kana: 'わ', romaji: 'wa' }, { kana: 'を', romaji: 'wo' }, { kana: 'ん', romaji: 'n' },
+            { kana: 'が', romaji: 'ga' }, { kana: 'ぎ', romaji: 'gi' }, { kana: 'ぐ', romaji: 'gu' }, { kana: 'げ', romaji: 'ge' }, { kana: 'ご', romaji: 'go' },
+            { kana: 'ざ', romaji: 'za' }, { kana: 'じ', romaji: 'ji' }, { kana: 'ず', romaji: 'zu' }, { kana: 'ぜ', romaji: 'ze' }, { kana: 'ぞ', romaji: 'zo' },
+            { kana: 'だ', romaji: 'da' }, { kana: 'ぢ', romaji: 'ji' }, { kana: 'づ', romaji: 'zu' }, { kana: 'で', romaji: 'de' }, { kana: 'ど', romaji: 'do' },
+            { kana: 'ば', romaji: 'ba' }, { kana: 'び', romaji: 'bi' }, { kana: 'ぶ', romaji: 'bu' }, { kana: 'べ', romaji: 'be' }, { kana: 'ぼ', romaji: 'bo' },
+            { kana: 'ぱ', romaji: 'pa' }, { kana: 'ぴ', romaji: 'pi' }, { kana: 'ぷ', romaji: 'pu' }, { kana: 'ぺ', romaji: 'pe' }, { kana: 'ぽ', romaji: 'po' }
+        ];
+
+        const katakanaData = [
+            { kana: 'ア', romaji: 'a' }, { kana: 'イ', romaji: 'i' }, { kana: 'ウ', romaji: 'u' }, { kana: 'エ', romaji: 'e' }, { kana: 'オ', romaji: 'o' },
+            { kana: 'カ', romaji: 'ka' }, { kana: 'キ', romaji: 'ki' }, { kana: 'ク', romaji: 'ku' }, { kana: 'ケ', romaji: 'ke' }, { kana: 'コ', romaji: 'ko' },
+            { kana: 'サ', romaji: 'sa' }, { kana: 'シ', romaji: 'shi' }, { kana: 'ス', romaji: 'su' }, { kana: 'セ', romaji: 'se' }, { kana: 'ソ', romaji: 'so' },
+            { kana: 'タ', romaji: 'ta' }, { kana: 'チ', romaji: 'chi' }, { kana: 'ツ', romaji: 'tsu' }, { kana: 'テ', romaji: 'te' }, { kana: 'ト', romaji: 'to' },
+            { kana: 'ナ', romaji: 'na' }, { kana: 'ニ', romaji: 'ni' }, { kana: 'ヌ', romaji: 'nu' }, { kana: 'ネ', romaji: 'ne' }, { kana: 'ノ', romaji: 'no' },
+            { kana: 'ハ', romaji: 'ha' }, { kana: 'ヒ', romaji: 'hi' }, { kana: 'フ', romaji: 'fu' }, { kana: 'ヘ', romaji: 'he' }, { kana: 'ホ', romaji: 'ho' },
+            { kana: 'マ', romaji: 'ma' }, { kana: 'ミ', romaji: 'mi' }, { kana: 'ム', romaji: 'mu' }, { kana: 'メ', romaji: 'me' }, { kana: 'モ', romaji: 'mo' },
+            { kana: 'ヤ', romaji: 'ya' }, { kana: 'ユ', romaji: 'yu' }, { kana: 'ヨ', romaji: 'yo' },
+            { kana: 'ラ', romaji: 'ra' }, { kana: 'リ', romaji: 'ri' }, { kana: 'ル', romaji: 'ru' }, { kana: 'レ', romaji: 're' }, { kana: 'ロ', romaji: 'ro' },
+            { kana: 'ワ', romaji: 'wa' }, { kana: 'ヲ', romaji: 'wo' }, { kana: 'ン', romaji: 'n' },
+            { kana: 'ガ', romaji: 'ga' }, { kana: 'ギ', romaji: 'gi' }, { kana: 'グ', romaji: 'gu' }, { kana: 'ゲ', romaji: 'ge' }, { kana: 'ゴ', romaji: 'go' },
+            { kana: 'ザ', romaji: 'za' }, { kana: 'ジ', romaji: 'ji' }, { kana: 'ズ', romaji: 'zu' }, { kana: 'ゼ', romaji: 'ze' }, { kana: 'ゾ', romaji: 'zo' },
+            { kana: 'ダ', romaji: 'da' }, { kana: 'ヂ', romaji: 'ji' }, { kana: 'ヅ', romaji: 'zu' }, { kana: 'デ', romaji: 'de' }, { kana: 'ド', romaji: 'do' },
+            { kana: 'バ', romaji: 'ba' }, { kana: 'ビ', romaji: 'bi' }, { kana: 'ブ', romaji: 'bu' }, { kana: 'ベ', romaji: 'be' }, { kana: 'ボ', romaji: 'bo' },
+            { kana: 'パ', romaji: 'pa' }, { kana: 'ピ', romaji: 'pi' }, { kana: 'プ', romaji: 'pu' }, { kana: 'ペ', romaji: 'pe' }, { kana: 'ポ', romaji: 'po' }
+        ];
+
+        const hiraganaBasicGrid = [
+            ['あ', 'い', 'う', 'え', 'お'], ['か', 'き', 'く', 'け', 'こ'], ['さ', 'し', 'す', 'せ', 'そ'],
+            ['た', 'ち', 'つ', 'て', 'と'], ['な', 'に', 'ぬ', 'ね', 'の'], ['は', 'ひ', 'ふ', 'へ', 'ほ'],
+            ['ま', 'み', 'む', 'め', 'も'], ['や', null, 'ゆ', null, 'よ'], ['ら', 'り', 'る', 'れ', 'ろ'],
+            ['わ', null, null, null, 'を'], ['ん', null, null, null, null]
+        ];
+        const hiraganaModifiedGrid = [
+            ['が', 'ぎ', 'ぐ', 'げ', 'ご'], ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'], ['だ', 'ぢ', 'づ', 'で', 'ど'],
+            ['ば', 'び', 'ぶ', 'べ', 'ぼ'], ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+        ];
+        const katakanaBasicGrid = [
+            ['ア', 'イ', 'ウ', 'エ', 'オ'], ['カ', 'キ', 'ク', 'ケ', 'コ'], ['サ', 'シ', 'ス', 'セ', 'ソ'],
+            ['タ', 'チ', 'ツ', 'テ', 'ト'], ['ナ', 'ニ', 'ヌ', 'ネ', 'ノ'], ['ハ', 'ヒ', 'フ', 'ヘ', 'ホ'],
+            ['マ', 'ミ', 'ム', 'メ', 'モ'], ['ヤ', null, 'ユ', null, 'ヨ'], ['ラ', 'リ', 'ル', 'レ', 'ロ'],
+            ['ワ', null, null, null, 'ヲ'], ['ン', null, null, null, null]
+        ];
+        const katakanaModifiedGrid = [
+            ['ガ', 'ギ', 'グ', 'ゲ', 'ゴ'], ['ザ', 'ジ', 'ズ', 'ゼ', 'ゾ'], ['ダ', 'ヂ', 'ヅ', 'デ', 'ド'],
+            ['バ', 'ビ', 'ブ', 'ベ', 'ボ'], ['パ', 'ピ', 'プ', 'ペ', 'ポ']
+        ];
+
+        const QUESTIONS_PER_SESSION = 20;
+        const MASTERY_TARGET = 1;
+        const STORAGE_KEY = 'kana_master_v1';
+
+        let state = {
+            theme: 'light',
+            activeTab: 'practice',
+            view: 'intro', // intro | setup | session | result | dashboard | certificate
+            mode: 'mcq', // mcq | writing
+            kanaSet: 'hiragana', // hiragana | katakana | both
+            currentQuestion: null,
+            mcqOptions: [],
+            sessionData: { questionNumber: 0, score: 0, mistakes: [], startTime: 0, totalTimeTaken: 0 },
+            stats: {}, // Map of character to { correct, wrong, time, attempts }
+            feedback: null, // null | 'correct' | 'incorrect'
+            writingInput: '',
+            isProcessing: false,
+            visualTime: 0,
+            questionStartTime: 0,
+            userName: '',       // For the certificate
+            certEditingName: false // Whether the inline name editor is open
+        };
+
+        let timerInterval = null;
+        let previousView = null;
+
+        // ── Persistence ──────────────────────────────────────────────────────────
+        function saveToStorage() {
+            try {
+                const data = {
+                    stats:    state.stats,
+                    userName: state.userName,
+                    theme:    state.theme,
+                    mode:     state.mode,
+                    kanaSet:  state.kanaSet
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) { /* storage unavailable — silently ignore */ }
+        }
+
+        function loadFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.stats    && typeof data.stats === 'object') state.stats    = data.stats;
+                if (data.userName && typeof data.userName === 'string') state.userName = data.userName;
+                if (data.theme    === 'dark' || data.theme === 'light') state.theme   = data.theme;
+                if (data.mode     === 'mcq'  || data.mode  === 'writing') state.mode  = data.mode;
+                if (['hiragana','katakana','both'].includes(data.kanaSet)) state.kanaSet = data.kanaSet;
+            } catch (e) { /* corrupt data — start fresh */ }
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        function getActiveDataset() {
+            if (state.kanaSet === 'hiragana') return hiraganaData;
+            if (state.kanaSet === 'katakana') return katakanaData;
+            return [...hiraganaData, ...katakanaData];
+        }
+
+        function getMasteryStats() {
+            const allKana = [...hiraganaData, ...katakanaData];
+            const totalMasteryPoints = allKana.length * MASTERY_TARGET;
+            let currentMasteryPoints = 0;
+            
+            Object.values(state.stats).forEach(data => {
+                currentMasteryPoints += Math.min(data.correct, MASTERY_TARGET);
+            });
+            return totalMasteryPoints === 0 ? 0 : Math.round((currentMasteryPoints / totalMasteryPoints) * 100);
+        }
+
+        function startSession() {
+            state.sessionData = {
+                questionNumber: 1,
+                score: 0,
+                mistakes: [],
+                startTime: Date.now(),
+                totalTimeTaken: 0
+            };
+            state.view = 'session';
+            generateQuestion();
+        }
+
+        function generateQuestion() {
+            const fullDataset = getActiveDataset();
+            
+            // Filter out mastered characters
+            let eligibleDataset = fullDataset.filter(item => {
+                const stat = state.stats[item.kana];
+                return !stat || stat.correct < MASTERY_TARGET;
+            });
+
+            // If everything in this dataset is mastered, allow all of them for practice
+            if (eligibleDataset.length === 0) {
+                eligibleDataset = fullDataset; 
+            }
+
+            const randomIndex = Math.floor(Math.random() * eligibleDataset.length);
+            const question = eligibleDataset[randomIndex];
+            state.currentQuestion = question;
+
+            if (state.mode === 'mcq') {
+                const options = new Set([question.romaji]);
+                while (options.size < 4) {
+                    const randomDistractor = fullDataset[Math.floor(Math.random() * fullDataset.length)].romaji;
+                    options.add(randomDistractor);
+                }
+                state.mcqOptions = shuffleArray(Array.from(options));
+            }
+            
+            state.writingInput = '';
+            state.feedback = null;
+            state.isProcessing = false;
+            state.questionStartTime = Date.now();
+            state.visualTime = 0;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                state.visualTime = Math.floor((Date.now() - state.questionStartTime) / 1000);
+                const timerEl = document.getElementById('visual-timer');
+                if (timerEl) {
+                    timerEl.innerText = state.visualTime + 's';
+                    if (state.visualTime > 5) {
+                        timerEl.classList.add('text-amber-600', 'dark:text-amber-400');
+                        timerEl.classList.remove('text-slate-800', 'dark:text-slate-200');
+                    }
+                }
+            }, 1000);
+            
+            render();
+        }
+
+        function handleAnswer(selectedRomaji) {
+            if (state.isProcessing) return;
+            state.isProcessing = true;
+            clearInterval(timerInterval);
+
+            const timeTaken = Date.now() - state.questionStartTime;
+            const isCorrect = selectedRomaji.toLowerCase() === state.currentQuestion.romaji.toLowerCase();
+            const kanaChar = state.currentQuestion.kana;
+            
+            if (!state.stats[kanaChar]) {
+                state.stats[kanaChar] = { correct: 0, wrong: 0, time: 0, attempts: 0 };
+            }
+            
+            const charStats = state.stats[kanaChar];
+            charStats.attempts++;
+            charStats.time += timeTaken;
+
+            if (isCorrect) {
+                charStats.correct++;
+                state.feedback = 'correct';
+                state.sessionData.score++;
+            } else {
+                charStats.wrong++;
+                state.feedback = 'incorrect';
+                state.sessionData.mistakes.push({ 
+                    kana: kanaChar, 
+                    expected: state.currentQuestion.romaji, 
+                    answered: selectedRomaji || '(skipped)',
+                    timeTaken
+                });
+            }
+
+            render();
+            saveToStorage(); // persist stats after every answer
+
+            setTimeout(() => {
+                if (state.sessionData.questionNumber >= QUESTIONS_PER_SESSION) {
+                    state.sessionData.totalTimeTaken = Date.now() - state.sessionData.startTime;
+                    state.view = 'result';
+                } else {
+                    state.sessionData.questionNumber++;
+                    generateQuestion();
+                    return; // generateQuestion handles the render
+                }
+                render();
+            }, 1000);
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            if (state.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            saveToStorage();
+            renderNav();
+            lucide.createIcons();
+        }
+
+        function updateSetupUI() {
+            document.querySelectorAll('[data-action="set-mode"]').forEach(btn => {
+                const isSelected = btn.getAttribute('data-value') === state.mode;
+                btn.className = `flex-1 py-2.5 text-sm md:text-base font-semibold rounded-lg transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`;
+            });
+
+            document.querySelectorAll('[data-action="set-kana"]').forEach(btn => {
+                const isSelected = btn.getAttribute('data-value') === state.kanaSet;
+                btn.className = `flex-1 py-2.5 text-xs md:text-sm font-semibold rounded-lg transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`;
+            });
+        }
+
+        function renderNav() {
+            const navBar = document.querySelector('#app > div:first-child');
+            if (navBar) navBar.style.display = state.view === 'intro' ? 'none' : '';
+
+            const nav = document.getElementById('nav-actions');
+            const isSession = state.view === 'session';
+            const disableClass = isSession ? 'opacity-50 pointer-events-none' : '';
+            
+            nav.innerHTML = `
+                <button data-action="go-setup" class="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition-all 
+                    ${state.activeTab === 'practice' && !isSession ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'} ${disableClass}">
+                    <i data-lucide="home" class="w-3.5 h-3.5 md:w-4 md:h-4"></i> <span class="hidden sm:inline">Practice</span>
+                </button>
+                <button data-action="go-dashboard" class="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition-all 
+                    ${state.activeTab === 'dashboard' ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'} ${disableClass}">
+                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 md:w-4 md:h-4"></i> <span class="hidden sm:inline">Dashboard</span>
+                </button>
+                <div class="w-px h-6 mx-1 bg-slate-300 dark:bg-slate-800"></div>
+                <button data-action="toggle-theme" title="Toggle Theme" class="p-1.5 md:p-2 rounded-full transition-colors text-slate-500 hover:text-indigo-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-yellow-400 dark:hover:bg-slate-800">
+                    <i data-lucide="${state.theme === 'dark' ? 'sun' : 'moon'}" class="w-4 h-4 md:w-5 md:h-5"></i>
+                </button>
+            `;
+        }
+
+        function getIntroHTML() {
+            return `
+            <div class="w-full min-h-screen flex flex-col items-center animate-fade-in" style="margin-top: -1rem">
+
+                <!-- Hero -->
+                <div class="relative w-full flex flex-col items-center justify-center px-4 pt-14 pb-12 md:pt-24 md:pb-16 overflow-hidden">
+                    <!-- Floating background kana -->
+                    <div class="absolute inset-0 pointer-events-none select-none overflow-hidden">
+                        <span class="absolute top-6 left-[8%]  text-6xl md:text-8xl font-black text-indigo-500/10 dark:text-indigo-400/10 float-a">あ</span>
+                        <span class="absolute top-10 right-[10%] text-7xl md:text-9xl font-black text-purple-500/10 dark:text-purple-400/10 float-b">ア</span>
+                        <span class="absolute bottom-8 left-[15%] text-5xl md:text-7xl font-black text-indigo-400/10 dark:text-indigo-300/10 float-c">か</span>
+                        <span class="absolute bottom-4 right-[18%] text-6xl md:text-8xl font-black text-violet-500/10 dark:text-violet-400/10 float-a" style="animation-delay:1.2s">カ</span>
+                        <span class="absolute top-1/2 left-[3%]  text-4xl font-black text-indigo-300/10 float-b" style="animation-delay:0.6s">の</span>
+                        <span class="absolute top-1/3 right-[4%] text-5xl font-black text-purple-300/10 float-c" style="animation-delay:2s">ノ</span>
+                    </div>
+
+                    <!-- Brand badge -->
+                    <div class="mb-5 px-4 py-1.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[11px] md:text-xs font-bold tracking-widest uppercase shadow-sm backdrop-blur-sm">
+                        🌸 Japanese Kana Trainer
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="text-5xl md:text-7xl font-black text-center leading-[1.1] mb-4 tracking-tight">
+                        <span class="bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">Kana</span><br>
+                        <span class="text-slate-900 dark:text-white">Master</span>
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-center text-base md:text-lg max-w-sm mb-10 leading-relaxed">
+                        Learn every Hiragana &amp; Katakana character. Earn your certificate. Prove you're a Kana Master.
+                    </p>
+
+                    <!-- CTA -->
+                    <button data-action="go-setup"
+                        class="px-10 py-4 md:px-12 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-lg rounded-2xl shadow-[0_8px_30px_rgb(99,102,241,0.3)] transition-all active:scale-95 hover:scale-105 flex items-center gap-3">
+                        Start Learning
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                    <p class="mt-4 text-xs font-medium text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                        <span>Free</span> &bull; <span>No account needed</span> &bull; <span>Works offline</span>
+                    </p>
+                </div>
+
+                <!-- How it works -->
+                <div class="w-full max-w-2xl px-4 pb-12">
+                    <div class="flex items-center justify-center gap-3 mb-8">
+                        <div class="h-px bg-slate-200 dark:bg-slate-800 flex-1 max-w-[50px]"></div>
+                        <p class="text-center text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">How It Works</p>
+                        <div class="h-px bg-slate-200 dark:bg-slate-800 flex-1 max-w-[50px]"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-4 md:gap-6">
+                        <!-- Step 1 -->
+                        <div class="group flex items-start gap-4 p-5 md:p-6 rounded-3xl border bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all duration-300 backdrop-blur-md">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                <span class="text-xl font-black text-indigo-600 dark:text-indigo-400">1</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-black text-slate-900 dark:text-white text-lg mb-1">Practice Kana</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Each session gives you 20 questions. Choose between multiple-choice or typing mode. Pick Hiragana, Katakana, or both!</p>
+                                <div class="mt-4 flex gap-2 flex-wrap">
+                                    <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-lg font-black shadow-sm">あ</span>
+                                    <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-lg font-black shadow-sm">ア</span>
+                                    <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-lg font-black shadow-sm">か</span>
+                                    <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-lg font-black shadow-sm">カ</span>
+                                    <span class="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-800/50 flex items-center">+162 more</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="group flex items-start gap-4 p-5 md:p-6 rounded-3xl border bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-900/50 transition-all duration-300 backdrop-blur-md">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                <span class="text-xl font-black text-emerald-600 dark:text-emerald-400">2</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-black text-slate-900 dark:text-white text-lg mb-1">Master Every Letter</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Answer a kana correctly <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded">once</span> to master it. Track your progress on the mastery grid — watch it fill up green!</p>
+                                <!-- Mini mastery cells demo -->
+                                <div class="mt-4 flex gap-1.5 items-center">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 text-sm font-bold shadow-sm">ぬ</div>
+                                    <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-500 text-sm font-bold shadow-sm">さ</div>
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-500 shadow-sm flex items-center justify-center text-white text-sm font-bold ring-2 ring-emerald-500/20 ring-offset-1 dark:ring-offset-slate-900">か</div>
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-500 shadow-sm flex items-center justify-center text-white text-sm font-bold ring-2 ring-emerald-500/20 ring-offset-1 dark:ring-offset-slate-900">ア</div>
+                                    <div class="flex flex-col justify-center pl-2 gap-1.5">
+                                        <div class="flex items-center gap-1.5 text-[10px] font-medium text-slate-500"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 inline-block"></span>Not started</div>
+                                        <div class="flex items-center gap-1.5 text-[10px] font-medium text-rose-500"><span class="w-2.5 h-2.5 rounded-sm bg-rose-100 dark:bg-rose-900/40 border border-rose-300 dark:border-rose-800 inline-block"></span>Got wrong</div>
+                                        <div class="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>Mastered!</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 — Certificate -->
+                        <div class="group flex items-start gap-4 p-5 md:p-6 rounded-3xl border bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/50 transition-all duration-300 backdrop-blur-md">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                <span class="text-xl font-black text-rose-500 dark:text-rose-400">3</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-black text-slate-900 dark:text-white text-lg mb-1 flex items-center gap-1.5">Earn Your Certificate <span class="text-sm">🌸</span></h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Master all kana and claim your official <span class="font-bold text-rose-500 dark:text-rose-400">Kana Master Certificate</span> — a beautiful cherry blossom scroll personalised with your name!</p>
+
+                                <!-- Real certificate photo fully visible -->
+                                <div class="mt-4 rounded-xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl shadow-rose-900/10 bg-rose-50 dark:bg-rose-900/10">
+                                    <img src="certificate.png" alt="Kana Master Certificate preview" class="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final CTA -->
+                    <div class="mt-10 text-center">
+                        <button data-action="go-setup" class="px-8 py-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-black text-base rounded-2xl shadow-xl shadow-slate-900/20 dark:shadow-white/10 transition-all active:scale-95 hover:-translate-y-1 flex items-center gap-2 mx-auto">
+                            <i data-lucide="zap" class="w-5 h-5"></i> Begin Your Journey
+                        </button>
+                        <p class="mt-4 text-xs font-medium text-slate-400 dark:text-slate-500">166 total characters &bull; Hiragana &amp; Katakana</p>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+
+        function getSetupHTML(isNewView) {
+            const animClass = isNewView ? 'animate-fade-in' : '';
+            return `
+            <div class="flex flex-col items-center justify-center h-full w-full max-w-md mx-auto space-y-5 md:space-y-8 ${animClass} px-1">
+                <div class="text-center space-y-1.5 md:space-y-2">
+                    <div class="inline-flex p-3 md:p-4 rounded-full mb-1 bg-indigo-100 dark:bg-indigo-500/10">
+                        <i data-lucide="play" class="w-8 h-8 md:w-10 md:h-10 text-indigo-600 dark:text-indigo-400"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100">Ready to Practice?</h2>
+                    <p class="text-sm md:text-base text-slate-600 dark:text-slate-400">Sessions are 20 questions long.</p>
+                </div>
+
+                <div class="w-full space-y-4 md:space-y-6 p-5 md:p-6 rounded-3xl border shadow-lg bg-white border-slate-200 shadow-slate-200/50 dark:bg-slate-900/50 dark:border-slate-800 dark:shadow-black/20">
+                    <div class="space-y-2 md:space-y-3">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Practice Mode</label>
+                        <div class="flex p-1.5 rounded-xl border shadow-inner bg-slate-100 border-slate-200 dark:bg-slate-950 dark:border-slate-800">
+                            <button data-action="set-mode" data-value="mcq" class="flex-1 py-3 md:py-2.5 text-sm font-semibold rounded-lg transition-all ${state.mode === 'mcq' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}">Choices</button>
+                            <button data-action="set-mode" data-value="writing" class="flex-1 py-3 md:py-2.5 text-sm font-semibold rounded-lg transition-all ${state.mode === 'writing' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}">Typing</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 md:space-y-3">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Kana Set</label>
+                        <div class="flex p-1.5 rounded-xl border shadow-inner bg-slate-100 border-slate-200 dark:bg-slate-950 dark:border-slate-800">
+                            <button data-action="set-kana" data-value="hiragana" class="flex-1 py-3 md:py-2.5 text-xs md:text-sm font-semibold rounded-lg transition-all ${state.kanaSet === 'hiragana' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}">Hiragana</button>
+                            <button data-action="set-kana" data-value="katakana" class="flex-1 py-3 md:py-2.5 text-xs md:text-sm font-semibold rounded-lg transition-all ${state.kanaSet === 'katakana' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}">Katakana</button>
+                            <button data-action="set-kana" data-value="both" class="flex-1 py-3 md:py-2.5 text-xs md:text-sm font-semibold rounded-lg transition-all ${state.kanaSet === 'both' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}">Mixed</button>
+                        </div>
+                    </div>
+                    
+                    <button data-action="start-session" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base rounded-xl shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center justify-center gap-2">
+                        Start Session <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function getSessionHTML(isNewView) {
+            let boxClass = 'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800';
+            let charClass = 'text-slate-900 dark:text-slate-50';
+            let feedbackText = '';
+            let feedbackClass = 'opacity-0';
+
+            if (state.feedback === 'correct') {
+                boxClass = 'border-emerald-500 shadow-emerald-500/20';
+                charClass = 'scale-110 text-emerald-500 dark:text-emerald-400';
+                feedbackText = 'Correct!';
+                feedbackClass = 'opacity-100 text-emerald-600 dark:text-emerald-400';
+            } else if (state.feedback === 'incorrect') {
+                boxClass = 'border-rose-500 shadow-rose-500/20';
+                charClass = 'scale-90 text-rose-500 dark:text-rose-400';
+                feedbackText = `It was '${state.currentQuestion?.romaji}'`;
+                feedbackClass = 'opacity-100 text-rose-600 dark:text-rose-400';
+            }
+
+            let controlsHTML = '';
+            if (state.mode === 'mcq') {
+                const buttons = state.mcqOptions.map(option => {
+                    let btnClass = 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-950 dark:hover:bg-slate-800 dark:text-slate-200 dark:border-slate-700/50';
+                    if (state.feedback) {
+                        if (option === state.currentQuestion.romaji) {
+                            btnClass = 'bg-emerald-600 text-white border-emerald-500 scale-[1.02] shadow-lg';
+                        } else if (state.feedback === 'incorrect') {
+                            btnClass = 'bg-slate-100 text-slate-400 border-slate-200 opacity-50 dark:bg-slate-950 dark:text-slate-600 dark:border-slate-900';
+                        }
+                    }
+                    return `<button data-action="answer-mcq" data-value="${option}" ${state.isProcessing ? 'disabled' : ''} class="py-4 md:py-4 rounded-xl text-xl md:text-xl font-bold border-2 transition-all duration-200 active:scale-95 ${btnClass}">${option}</button>`;
+                }).join('');
+                controlsHTML = `<div class="grid grid-cols-2 gap-2.5 md:gap-3 w-full z-10">${buttons}</div>`;
+            } else {
+                let inputClass = 'bg-white text-slate-900 border-slate-300 focus:bg-slate-50 focus:border-indigo-500 dark:bg-slate-950/50 dark:text-white dark:border-slate-700 dark:focus:border-indigo-500 dark:focus:bg-slate-800';
+                if (state.feedback === 'correct') inputClass = 'border-emerald-500 text-emerald-500 dark:border-emerald-500 dark:text-emerald-500';
+                else if (state.feedback === 'incorrect') inputClass = 'border-rose-500 text-rose-500 dark:border-rose-500 dark:text-rose-500';
+
+                controlsHTML = `
+                <form id="writing-form" class="w-full z-10 flex flex-col gap-3">
+                    <input id="writing-input" type="text" inputmode="latin" ${state.isProcessing ? 'disabled' : ''} value="${state.writingInput}" placeholder="Type romaji (e.g. ka)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                        class="w-full border-2 rounded-xl px-4 py-4 md:py-4 text-center text-xl md:text-2xl font-bold outline-none transition-all placeholder:text-base placeholder:font-normal placeholder:text-slate-400 dark:placeholder:text-slate-600 ${inputClass}" />
+                    <div class="flex gap-2.5">
+                        <button type="button" data-action="skip-writing" ${state.isProcessing ? 'disabled' : ''} class="flex-1 py-4 font-semibold rounded-xl transition-colors disabled:opacity-50 bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200">Skip</button>
+                        <button type="submit" ${state.isProcessing ? 'disabled' : ''} class="flex-[2] py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all disabled:opacity-50 disabled:bg-slate-400 active:scale-95">Check</button>
+                    </div>
+                </form>`;
+            }
+
+            const animClass = isNewView ? 'animate-slide-up' : '';
+
+            // Progress bar width
+            const progressPct = Math.round(((state.sessionData.questionNumber - 1) / QUESTIONS_PER_SESSION) * 100);
+
+            return `
+            <div class="w-full max-w-lg mx-auto flex flex-col items-center ${animClass} px-1">
+                <!-- Compact stats bar -->
+                <div class="w-full flex justify-between items-center mb-3 md:mb-5 px-1">
+                    <span class="text-xs font-bold text-slate-500">${state.sessionData.questionNumber} <span class="text-slate-400 font-normal">/ ${QUESTIONS_PER_SESSION}</span></span>
+                    <div class="flex items-center gap-4">
+                        <span id="visual-timer" class="text-xs font-bold font-mono ${state.visualTime > 5 ? 'text-amber-500 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}">${state.visualTime}s</span>
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">${state.sessionData.score} pts</span>
+                    </div>
+                </div>
+                <!-- Thin progress bar -->
+                <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 mb-4 md:mb-6 overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                </div>
+
+                <div class="w-full border-2 rounded-3xl p-5 md:p-8 flex flex-col items-center justify-center shadow-2xl transition-all duration-300 relative overflow-hidden ${boxClass}" style="min-height: clamp(300px, 55vh, 420px)">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl pointer-events-none bg-indigo-500/10 dark:bg-indigo-500/5"></div>
+
+                    <div class="text-[5rem] md:text-[8rem] leading-none font-medium mb-6 md:mb-12 relative z-10 transition-transform duration-300 select-none ${charClass}">
+                        ${state.currentQuestion?.kana || ''}
+                    </div>
+                    
+                    ${controlsHTML}
+
+                    <div class="absolute bottom-3 md:bottom-4 font-bold text-base md:text-lg transition-opacity duration-300 ${feedbackClass}">
+                        ${feedbackText}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function getResultHTML(isNewView) {
+            const accuracy = Math.round((state.sessionData.score / QUESTIONS_PER_SESSION) * 100);
+            const timeInSeconds = Math.round(state.sessionData.totalTimeTaken / 1000);
+            const mins = Math.floor(timeInSeconds / 60);
+            const secs = timeInSeconds % 60;
+            const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+            let accuracyColor = 'text-rose-600 dark:text-rose-400';
+            if (accuracy >= 80) accuracyColor = 'text-emerald-600 dark:text-emerald-400';
+            else if (accuracy >= 50) accuracyColor = 'text-amber-600 dark:text-amber-400';
+
+            const mistakesHTML = state.sessionData.mistakes.length === 0 ? '' : `
+                <div class="text-left mb-8">
+                    <h3 class="text-xs md:text-sm font-bold uppercase tracking-wide mb-3 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                        <i data-lucide="x-circle" class="w-4 h-4 text-rose-500"></i> Review Mistakes
+                    </h3>
+                    <div class="rounded-xl border divide-y max-h-48 overflow-y-auto bg-slate-50 border-slate-200 divide-slate-200 dark:bg-slate-950 dark:border-slate-800/50 dark:divide-slate-800/50">
+                        ${state.sessionData.mistakes.map(m => `
+                            <div class="flex justify-between items-center p-3">
+                                <span class="text-xl md:text-2xl font-bold w-12 text-slate-900 dark:text-white">${m.kana}</span>
+                                <div class="flex flex-col items-end">
+                                    <span class="font-mono font-bold text-xs md:text-sm text-emerald-600 dark:text-emerald-400">✓ ${m.expected}</span>
+                                    <span class="font-mono text-[10px] md:text-xs line-through text-rose-600 dark:text-rose-400">✗ ${m.answered}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+
+            const animClass = isNewView ? 'animate-fade-in' : '';
+
+            return `
+            <div class="w-full max-w-lg mx-auto flex flex-col items-center ${animClass} px-1">
+                <div class="border p-5 md:p-8 rounded-3xl w-full shadow-2xl relative overflow-hidden text-center bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                    <div class="mb-5 md:mb-6">
+                        <div class="w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 border-4 bg-indigo-100 border-indigo-200 dark:bg-indigo-500/20 dark:border-indigo-500/30">
+                            <i data-lucide="award" class="w-7 h-7 md:w-10 md:h-10 text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">Session Complete!</h2>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-5 md:mb-8">
+                        <div class="p-4 rounded-2xl border bg-slate-50 border-slate-200 dark:bg-slate-950 dark:border-slate-800/50">
+                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Accuracy</div>
+                            <div class="text-3xl font-black ${accuracyColor}">${accuracy}%</div>
+                            <div class="text-xs font-medium mt-1 text-slate-500 dark:text-slate-400">${state.sessionData.score} / ${QUESTIONS_PER_SESSION}</div>
+                        </div>
+                        <div class="p-4 rounded-2xl border bg-slate-50 border-slate-200 dark:bg-slate-950 dark:border-slate-800/50">
+                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Time</div>
+                            <div class="text-3xl font-black text-slate-800 dark:text-slate-200">${timeStr}</div>
+                            <div class="text-xs font-medium mt-1 text-slate-500 dark:text-slate-400">~${(Math.round(state.sessionData.totalTimeTaken / QUESTIONS_PER_SESSION / 100) / 10).toFixed(1)}s / Q</div>
+                        </div>
+                    </div>
+                    
+                    ${mistakesHTML}
+
+                    <div class="flex flex-col gap-2.5">
+                        <button data-action="start-session" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Play Again
+                        </button>
+                        <button data-action="go-dashboard" class="w-full py-3.5 font-bold rounded-xl transition-colors bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300">View Dashboard</button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function getDashboardHTML(isNewView) {
+            const masteryPercent = getMasteryStats();
+            const statsList = Object.entries(state.stats).map(([kana, data]) => {
+                const avgTime = data.attempts > 0 ? data.time / data.attempts : 0;
+                const mastery = Math.min(data.correct, MASTERY_TARGET);
+                return { kana, ...data, avgTime, mastery };
+            });
+            
+            const hardest = [...statsList].filter(s => s.wrong > 0).sort((a, b) => b.wrong - a.wrong).slice(0, 5);
+            const slowest = [...statsList].filter(s => s.attempts > 0).sort((a, b) => b.avgTime - a.avgTime).slice(0, 5);
+
+            function generateGridSectionHTML(title, gridLayout, sourceData) {
+                const cells = gridLayout.flat().map(kanaChar => {
+                    if (!kanaChar) return `<div class="w-full aspect-square"></div>`;
+                    
+                    const dataItem = sourceData.find(d => d.kana === kanaChar);
+                    const stat = state.stats[kanaChar];
+                    const mastery = stat ? Math.min(stat.correct, MASTERY_TARGET) : 0;
+                    
+                    let bgClass = "bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800 dark:text-slate-600 dark:border-transparent";
+                    if (stat && stat.wrong > 0 && mastery < MASTERY_TARGET) bgClass = "bg-rose-100 text-rose-700 border border-rose-300 dark:bg-rose-900/50 dark:text-rose-400 dark:border-rose-900/50";
+                    if (mastery >= MASTERY_TARGET) bgClass = "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30 dark:bg-emerald-600 dark:shadow-emerald-900/20";
+
+                    return `<div title="${dataItem?.romaji || 'Unknown'}: ${mastery}/${MASTERY_TARGET} Mastered" 
+                                class="w-full aspect-square rounded-lg flex items-center justify-center font-bold text-lg md:text-xl cursor-default transition-colors ${bgClass}">
+                                ${kanaChar}
+                            </div>`;
+                }).join('');
+
+                return `
+                <div class="w-full flex-1">
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5 pl-2 border-l-2 border-indigo-500/50">${title}</h4>
+                    <div class="grid grid-cols-5 gap-2 md:gap-2.5 w-full">${cells}</div>
+                </div>`;
+            }
+
+            const hardestHTML = hardest.length === 0 ? 
+                `<div class="text-center py-5 text-slate-400 text-xs">No mistakes yet!</div>` :
+                `<div class="space-y-2.5">
+                    ${hardest.map(item => `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="text-2xl font-black w-8 text-center text-slate-900 dark:text-white">${item.kana}</div>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-slate-500 uppercase font-bold">Errors</span>
+                                    <span class="text-xs font-bold text-rose-600 dark:text-rose-400">${item.wrong}×</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            const slowestHTML = slowest.length === 0 ? 
+                `<div class="text-center py-5 text-slate-400 text-xs">No data yet!</div>` :
+                `<div class="space-y-2.5">
+                    ${slowest.map(item => `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="text-2xl font-black w-8 text-center text-slate-900 dark:text-white">${item.kana}</div>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-slate-500 uppercase font-bold">Avg</span>
+                                    <span class="text-xs font-bold text-amber-600 dark:text-amber-400">${(item.avgTime / 1000).toFixed(1)}s</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            const animClass = isNewView ? 'animate-fade-in' : '';
+
+            return `
+            <div class="w-full max-w-3xl mx-auto ${animClass} space-y-4 md:space-y-8 pb-10 px-0 md:px-4">
+                
+                <!-- Certificate Banner -->
+                <div class="p-1 rounded-3xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-xl shadow-orange-500/20">
+                    <div class="bg-white/95 dark:bg-slate-900/95 rounded-[22px] p-4 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+                                <i data-lucide="award" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-sm md:text-base text-slate-800 dark:text-slate-100 truncate">Kana Master Certificate</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                    ${masteryPercent === 100 ? 'You did it! Claim your reward.' : `${masteryPercent}% Completed. Keep going!`}
+                                </p>
+                            </div>
+                        </div>
+                        <button data-action="go-certificate" class="flex-shrink-0 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:scale-105 transition-transform active:scale-95 whitespace-nowrap">
+                            ${masteryPercent === 100 ? 'Claim Now' : 'Preview'}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mastery Progress -->
+                <div class="p-4 md:p-6 rounded-3xl border shadow-xl bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                    <div class="flex items-center gap-3 mb-3 md:mb-4">
+                        <i data-lucide="bar-chart" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+                        <h2 class="text-base md:text-xl font-bold text-slate-900 dark:text-white">Global Progression</h2>
+                    </div>
+                    
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Mastery</span>
+                        <span class="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400">${masteryPercent}%</span>
+                    </div>
+                    <div class="w-full h-3 rounded-full overflow-hidden border bg-slate-100 border-slate-200 dark:bg-slate-950 dark:border-slate-800">
+                        <div class="h-full bg-gradient-to-r from-indigo-600 to-purple-500 rounded-full transition-all duration-1000 ease-out" style="width: ${masteryPercent}%"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-2 text-center">Answer each kana ${MASTERY_TARGET} times correctly to master it.</p>
+                </div>
+
+                <!-- Stats Grid — horizontal scroll on mobile so both cards are visible -->
+                <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6">
+                    <div class="p-4 md:p-6 rounded-3xl border shadow-xl bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                        <div class="flex items-center gap-2 mb-3 md:mb-6 border-b pb-2.5 md:pb-3 border-slate-200 dark:border-slate-800">
+                            <i data-lucide="x-circle" class="text-rose-500 w-4 h-4"></i>
+                            <h3 class="font-bold text-xs md:text-base text-slate-800 dark:text-slate-200">Mistakes</h3>
+                        </div>
+                        ${hardestHTML}
+                    </div>
+
+                    <div class="p-4 md:p-6 rounded-3xl border shadow-xl bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                        <div class="flex items-center gap-2 mb-3 md:mb-6 border-b pb-2.5 md:pb-3 border-slate-200 dark:border-slate-800">
+                            <i data-lucide="clock" class="w-4 h-4 text-amber-600 dark:text-amber-500"></i>
+                            <h3 class="font-bold text-xs md:text-base text-slate-800 dark:text-slate-200">Slowest</h3>
+                        </div>
+                        ${slowestHTML}
+                    </div>
+                </div>
+
+                <!-- Full Mastery Grid -->
+                <div class="p-4 md:p-6 rounded-3xl border shadow-xl bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                    <h3 class="font-bold mb-4 md:mb-6 flex items-center gap-2 border-b pb-3 text-sm md:text-base text-slate-800 border-slate-200 dark:text-slate-200 dark:border-slate-800">
+                       <i data-lucide="grid" class="w-4 h-4 md:w-5 md:h-5 text-emerald-600 dark:text-emerald-400"></i> Kana Grid
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6 md:gap-y-10 w-full">
+                        ${generateGridSectionHTML('Basic Hiragana', hiraganaBasicGrid, hiraganaData)}
+                        ${generateGridSectionHTML('Modified Hiragana', hiraganaModifiedGrid, hiraganaData)}
+                        ${generateGridSectionHTML('Basic Katakana', katakanaBasicGrid, katakanaData)}
+                        ${generateGridSectionHTML('Modified Katakana', katakanaModifiedGrid, katakanaData)}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function getCertificateHTML(isNewView) {
+            const animClass = isNewView ? 'animate-fade-in' : '';
+            const percent = getMasteryStats();
+            const isEligible = percent === 100;
+            const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const displayName = state.userName || 'Your Name';
+            const isEditingName = state.certEditingName;
+
+            // Subtle kana watermark letters scattered in bg
+            const bgKana = ['あ','い','う','か','き','さ','し','な','に','は','ま','や','ら','わ','ア','イ','ウ','カ','キ','ラ'];
+            const kanaPositions = [
+                { pos: 'top-3 left-4',     size: '2.2rem', rot: '12deg',  op: '0.055' },
+                { pos: 'top-5 right-5',    size: '2.8rem', rot: '-8deg',  op: '0.045' },
+                { pos: 'top-1/4 left-2',   size: '1.8rem', rot: '5deg',   op: '0.06'  },
+                { pos: 'top-1/3 right-4',  size: '2.4rem', rot: '-14deg', op: '0.05'  },
+                { pos: 'top-1/2 left-8',   size: '3rem',   rot: '20deg',  op: '0.04'  },
+                { pos: 'bottom-1/3 right-2','size': '1.9rem','rot': '7deg', op: '0.055' },
+                { pos: 'bottom-1/4 left-4', size: '2.5rem', rot: '-9deg',  op: '0.05'  },
+                { pos: 'bottom-6 right-10', size: '3rem',   rot: '16deg',  op: '0.045' },
+                { pos: 'bottom-5 left-12',  size: '1.8rem', rot: '-4deg',  op: '0.05'  },
+                { pos: 'top-3/4 right-14',  size: '2.3rem', rot: '11deg',  op: '0.04'  },
+            ];
+            const bgKanaHTML = bgKana.slice(0,10).map((k,i) => {
+                const p = kanaPositions[i];
+                return `<span class="absolute font-black select-none pointer-events-none ${p.pos}" style="font-size:${p.size};transform:rotate(${p.rot});opacity:${p.op};color:#be185d;">${k}</span>`;
+            }).join('');
+
+            // Locked overlay
+            const lockedOverlay = !isEligible ? `
+                <div class="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-xl" style="background: rgba(255,240,245,0.88); backdrop-filter: blur(4px);">
+                    <div class="text-center px-6">
+                        <div class="text-4xl mb-3">🌸</div>
+                        <p class="font-black text-rose-700 text-lg mb-1">Keep Going!</p>
+                        <p class="text-slate-600 text-sm">You're at <span class="font-bold text-rose-600">${percent}%</span> mastery.</p>
+                        <p class="text-slate-500 text-xs mt-1">Master all kana to receive your certificate.</p>
+                        <div class="mt-4 w-full max-w-[180px] mx-auto h-2 rounded-full bg-rose-100 overflow-hidden border border-rose-200">
+                            <div class="h-full bg-gradient-to-r from-pink-400 to-rose-500 rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                        <p class="text-rose-500 text-xs mt-1.5 font-bold">${percent}% / 100%</p>
+                    </div>
+                </div>` : '';
+
+            // Name section
+            const nameSection = isEligible ? (
+                isEditingName ? `
+                <div class="py-4 border-y border-rose-200">
+                    <p class="text-xs text-slate-400 mb-2 italic font-serif">This certifies that</p>
+                    <input id="cert-name-input" type="text" value="${state.userName || ''}" placeholder="Enter your name" maxlength="30"
+                        autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+                        class="w-full bg-transparent border-b-2 border-rose-400 outline-none text-2xl md:text-4xl font-cert font-bold text-slate-800 tracking-wide text-center pb-1 placeholder:text-rose-300 placeholder:text-xl" />
+                    <button data-action="save-cert-name" class="mt-3 px-5 py-1.5 bg-rose-500 hover:bg-rose-400 text-white text-xs font-black rounded-lg transition-colors active:scale-95">Save</button>
+                </div>` : `
+                <div class="py-4 border-y border-rose-200 cursor-pointer" data-action="edit-cert-name">
+                    <p class="text-xs text-slate-400 mb-1 italic font-serif">This certifies that</p>
+                    <p class="text-3xl md:text-5xl font-cert font-bold tracking-wide break-words ${displayName === 'Your Name' ? 'text-slate-300 italic' : 'text-slate-800'}">${displayName}</p>
+                </div>`) : `
+                <div class="py-4 border-y border-rose-200">
+                    <p class="text-xs text-slate-400 mb-1 italic font-serif">This certifies that</p>
+                    <p class="text-3xl md:text-5xl font-cert font-bold text-slate-300 italic tracking-wide">Your Name</p>
+                </div>`;
+
+            return `
+            <div class="w-full max-w-lg mx-auto ${animClass} px-1 pb-12">
+                ${isEligible
+                    ? `<p class="text-center text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">🌸 Take a screenshot to share your achievement!</p>`
+                    : `<p class="text-center text-xs font-medium text-rose-500 dark:text-rose-400 mb-3">🎯 Master all kana to receive your certificate!</p>`}
+
+                <!-- The Certificate Card -->
+                <div id="certificate-card" class="relative overflow-hidden mb-5"
+                    style="border-radius: 16px; border: 3px solid #f43f5e; box-shadow: 0 20px 60px rgba(244,63,94,0.15), 0 4px 16px rgba(0,0,0,0.08); min-height: clamp(360px, 65vw, 560px); background: linear-gradient(145deg, #fff9fb 0%, #fff0f5 40%, #fdf2f8 70%, #fff5f8 100%);">
+
+                    <!-- Decorative outer ring inside border -->
+                    <div class="absolute inset-2 rounded-xl border border-rose-200 pointer-events-none"></div>
+                    <div class="absolute inset-[14px] rounded-lg border border-dashed border-rose-200/70 pointer-events-none"></div>
+
+                    <!-- Background kana watermarks -->
+                    ${bgKanaHTML}
+
+                    <!-- Corner sakura clusters -->
+                    <div class="absolute top-2 left-2 select-none pointer-events-none text-[22px] leading-none opacity-60">🌸</div>
+                    <div class="absolute top-2 right-2 select-none pointer-events-none text-[22px] leading-none opacity-60" style="transform:scaleX(-1)">🌸</div>
+                    <div class="absolute bottom-2 left-2 select-none pointer-events-none text-[18px] leading-none opacity-40">🌸</div>
+                    <div class="absolute bottom-2 right-2 select-none pointer-events-none text-[18px] leading-none opacity-40" style="transform:scaleX(-1)">🌸</div>
+
+                    <!-- Subtle top gradient wash -->
+                    <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 50% 0%, rgba(244,63,94,0.04) 0%, transparent 60%);"></div>
+
+                    ${lockedOverlay}
+
+                    <!-- Certificate Content -->
+                    <div class="relative z-10 flex flex-col justify-between text-center px-8 py-6 md:px-12 md:py-8" style="min-height: clamp(360px, 65vw, 560px);">
+
+                        <!-- Header -->
+                        <div>
+                            <p class="text-[9px] md:text-[10px] font-bold tracking-[0.3em] uppercase text-rose-400 mb-3">Certificate of Achievement</p>
+
+                            <!-- Ornamental line -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"></div>
+                                <span class="text-rose-400 text-lg">✦</span>
+                                <span class="text-lg select-none">🌸</span>
+                                <span class="text-rose-400 text-lg">✦</span>
+                                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent"></div>
+                            </div>
+
+                            <h2 class="text-2xl md:text-4xl font-cert font-bold text-slate-800 tracking-wide leading-tight">Kana Master</h2>
+                            <p class="text-rose-400/80 text-[10px] md:text-xs font-serif italic mt-1">花の咲く道を歩む</p>
+                        </div>
+
+                        <!-- Name Section -->
+                        ${nameSection}
+
+                        <!-- Body & Footer -->
+                        <div>
+                            <p class="text-xs md:text-sm text-slate-500 mb-4 px-2 font-serif italic leading-relaxed">
+                                Has completed the path of the falling blossoms and achieved
+                                <span class="text-rose-500 font-bold not-italic">${percent}% mastery</span>
+                                of Japanese Hiragana and Katakana.
+                            </p>
+
+                            <!-- Ornamental line -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent"></div>
+                                <span class="text-rose-300 text-sm">❀</span>
+                                <div class="flex-1 h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent"></div>
+                            </div>
+
+                            <div class="flex justify-between items-end">
+                                <div class="text-left">
+                                    <p class="text-[9px] text-rose-400/70 uppercase tracking-widest mb-0.5">Awarded On</p>
+                                    <p class="text-xs font-bold text-slate-600">${dateStr}</p>
+                                </div>
+
+                                <!-- Japanese Inkan Stamp -->
+                                <div class="flex flex-col items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full -rotate-12"
+                                    style="border: 2.5px solid ${isEligible ? 'rgba(225,29,72,0.8)' : 'rgba(200,180,185,0.5)'}; color: ${isEligible ? 'rgba(225,29,72,0.8)' : 'rgba(200,180,185,0.5)'};">
+                                    <span class="text-xs font-black leading-none mb-0.5">合</span>
+                                    <span class="text-xs font-black leading-none">格</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-2.5">
+                    ${isEligible && !isEditingName ? `
+                    <button data-action="edit-cert-name" class="w-full py-3 border-2 border-rose-300 hover:border-rose-400 text-rose-600 font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 hover:bg-rose-50">
+                        <i data-lucide="pencil" class="w-4 h-4"></i> Edit Name on Certificate
+                    </button>` : ''}
+                    ${isEligible ? `
+                    <button data-action="share-cert" class="w-full py-4 bg-rose-500 hover:bg-rose-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200 flex items-center justify-center gap-2 active:scale-95">
+                        <i data-lucide="share-2" class="w-5 h-5"></i> Share Achievement
+                    </button>` : `
+                    <button data-action="go-setup" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 active:scale-95">
+                        <i data-lucide="play" class="w-5 h-5"></i> Keep Practicing
+                    </button>`}
+                    <button data-action="go-dashboard" class="w-full py-3.5 font-bold rounded-xl transition-colors bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300">
+                        Back to Dashboard
+                    </button>
+                </div>
+
+                <!-- Toast -->
+                <div id="toast-msg" class="hidden opacity-0 transition-opacity duration-300 mt-4 p-3 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-400 text-sm font-bold text-center"></div>
+            </div>`;
+        }
+
+        // ── Hash Routing ──────────────────────────────────────────────────────────
+
+        const VIEW_TO_HASH = {
+            intro:       '',
+            setup:       '#practice',
+            dashboard:   '#dashboard',
+            certificate: '#certificate',
+            session:     '#session',
+            result:      '#result'
+        };
+        const HASH_TO_VIEW = {
+            '':             'intro',
+            '#practice':    'setup',
+            '#dashboard':   'dashboard',
+            '#certificate': 'certificate'
+            // #session and #result are NOT restored — they redirect to safe views
+        };
+
+        function getViewFromHash() {
+            const hash = window.location.hash || '';
+            if (HASH_TO_VIEW[hash] !== undefined) return HASH_TO_VIEW[hash];
+            if (hash === '#session' || hash === '#result') return 'setup'; // can't resume
+            return 'intro';
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
+        function render() {
+            renderNav();
+            const main = document.getElementById('main-content');
+            const isNewView = previousView !== state.view;
+            
+            if (state.view === 'intro') main.innerHTML = getIntroHTML();
+            else if (state.view === 'setup') main.innerHTML = getSetupHTML(isNewView);
+            else if (state.view === 'session') main.innerHTML = getSessionHTML(isNewView);
+            else if (state.view === 'result') main.innerHTML = getResultHTML(isNewView);
+            else if (state.view === 'dashboard') main.innerHTML = getDashboardHTML(isNewView);
+            else if (state.view === 'certificate') main.innerHTML = getCertificateHTML(isNewView);
+
+            // Sync URL hash with current view (without triggering hashchange)
+            const targetHash = VIEW_TO_HASH[state.view] ?? '';
+            if (window.location.hash !== targetHash) {
+                history.pushState(null, '', targetHash || window.location.pathname);
+            }
+            
+            previousView = state.view;
+            lucide.createIcons();
+
+            if (state.view === 'session' && state.mode === 'writing' && !state.isProcessing) {
+                const input = document.getElementById('writing-input');
+                if (input) setTimeout(() => input.focus(), 10);
+            }
+            if (state.view === 'certificate' && state.certEditingName) {
+                const input = document.getElementById('cert-name-input');
+                if (input) setTimeout(() => { input.focus(); input.select(); }, 10);
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            
+            const action = target.getAttribute('data-action');
+            const value = target.getAttribute('data-value');
+            
+            if (action === 'set-mode') { state.mode = value; updateSetupUI(); }
+            else if (action === 'set-kana') { state.kanaSet = value; updateSetupUI(); }
+            else if (action === 'start-session') { startSession(); }
+            else if (action === 'answer-mcq') { handleAnswer(value); }
+            else if (action === 'skip-writing') { handleAnswer(''); }
+            else if (action === 'go-intro') { state.view = 'intro'; state.activeTab = 'practice'; render(); }
+            else if (action === 'go-setup') { state.view = 'setup'; state.activeTab = 'practice'; render(); }
+            else if (action === 'go-dashboard') { state.view = 'dashboard'; state.activeTab = 'dashboard'; render(); }
+            else if (action === 'go-certificate') { state.view = 'certificate'; state.certEditingName = false; render(); }
+            else if (action === 'toggle-theme') { toggleTheme(); }
+            else if (action === 'edit-cert-name') {
+                state.certEditingName = true;
+                render();
+            }
+            else if (action === 'save-cert-name') {
+                const nameInput = document.getElementById('cert-name-input');
+                if (nameInput) state.userName = nameInput.value.trim() || state.userName;
+                state.certEditingName = false;
+                saveToStorage();
+                render();
+            }
+            else if (action === 'share-cert') {
+                const percent = getMasteryStats();
+                const shareText = `I just achieved ${percent === 100 ? 'Kana Master status' : `${percent}% Mastery`} on Kana Practice App! 🎓✨\n\nName: ${state.userName}\nCan you beat my score?`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Kana Master Certificate',
+                        text: shareText,
+                        url: window.location.href
+                    }).catch(err => console.log('Share canceled or failed.'));
+                } else {
+                    // Fallback to clipboard
+                    const tempInput = document.createElement("textarea");
+                    tempInput.value = shareText;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(tempInput);
+                    
+                    const toast = document.getElementById('toast-msg');
+                    toast.innerText = "Text copied to clipboard! Take a screenshot to share the beautiful image.";
+                    toast.classList.remove('hidden');
+                    // Force reflow for fade in
+                    void toast.offsetWidth;
+                    toast.classList.remove('opacity-0');
+                    
+                    setTimeout(() => {
+                        toast.classList.add('opacity-0');
+                        setTimeout(() => toast.classList.add('hidden'), 300);
+                    }, 4000);
+                }
+            }
+        });
+
+        // Form submits for writing inputs
+        document.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (e.target.id === 'writing-form') {
+                const input = document.getElementById('writing-input');
+                if (input && input.value.trim() && !state.isProcessing) {
+                    handleAnswer(input.value.trim());
+                }
+            }
+        });
+
+        // Sync writing input to state as user types
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'writing-input') {
+                state.writingInput = e.target.value;
+            }
+        });
+
+        // Allow Enter to save name on certificate
+        document.addEventListener('keydown', (e) => {
+            if (e.target.id === 'cert-name-input' && e.key === 'Enter') {
+                const val = e.target.value.trim();
+                if (val) state.userName = val;
+                state.certEditingName = false;
+                saveToStorage();
+                render();
+            }
+        });
+
+        // Initialize App
+        loadFromStorage(); // restore saved progress before first render
+        if (state.theme === 'dark') document.documentElement.classList.add('dark');
+
+        // Restore view from URL hash on load
+        const viewFromHash = getViewFromHash();
+        if (viewFromHash !== 'intro') {
+            state.view = viewFromHash;
+            if (viewFromHash === 'dashboard') state.activeTab = 'dashboard';
+            if (viewFromHash === 'setup')     state.activeTab = 'practice';
+        }
+        render();
+
+        // Browser back/forward button support
+        window.addEventListener('popstate', () => {
+            const v = getViewFromHash();
+            state.view = v;
+            state.activeTab = v === 'dashboard' ? 'dashboard' : 'practice';
+            render();
+        });
+
+    </script>
+</body>
+</html>
