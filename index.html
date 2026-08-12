@@ -84,8 +84,8 @@
         
         <!-- Navigation Bar -->
         <div class="w-full max-w-3xl flex justify-between items-center mb-4 md:mb-8 py-2.5 px-4 md:py-2 md:px-2 md:pl-6 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 backdrop-blur-md sticky top-2 md:top-4 z-50 shadow-sm shadow-slate-200/50 dark:shadow-black/20">
-            <button data-action="go-intro" class="text-sm md:text-xl font-black bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate pr-2 hover:opacity-80 transition-opacity active:scale-95">
-                Kana Master
+            <button data-action="go-intro" class="flex items-center hover:opacity-80 transition-opacity active:scale-95">
+                <img src="logo.png" alt="Kana Master" class="h-10 md:h-12 w-auto object-contain mix-blend-multiply dark:mix-blend-lighten -ml-1 rounded-xl" />
             </button>
             
             <div class="flex items-center gap-1 md:gap-2" id="nav-actions">
@@ -411,16 +411,16 @@
                     </div>
 
                     <!-- Brand badge -->
-                    <div class="mb-5 px-4 py-1.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[11px] md:text-xs font-bold tracking-widest uppercase shadow-sm backdrop-blur-sm">
+                    <div class="mb-5 px-4 py-1.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[11px] md:text-xs font-bold tracking-widest uppercase shadow-sm backdrop-blur-sm z-10">
                         🌸 Japanese Kana Trainer
                     </div>
 
-                    <!-- Title -->
-                    <h1 class="text-5xl md:text-7xl font-black text-center leading-[1.1] mb-4 tracking-tight">
-                        <span class="bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent">Kana</span><br>
-                        <span class="text-slate-900 dark:text-white">Master</span>
-                    </h1>
-                    <p class="text-slate-500 dark:text-slate-400 text-center text-base md:text-lg max-w-sm mb-10 leading-relaxed">
+                    <!-- Cover Image as Title -->
+                    <div class="mb-4 z-10 w-full max-w-lg md:max-w-2xl px-2">
+                        <img src="cover.jpeg" alt="Kana Master" class="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-lighten" />
+                    </div>
+                    
+                    <p class="text-slate-500 dark:text-slate-400 text-center text-base md:text-lg max-w-sm mb-10 leading-relaxed z-10">
                         Learn every Hiragana &amp; Katakana character. Earn your certificate. Prove you're a Kana Master.
                     </p>
 
