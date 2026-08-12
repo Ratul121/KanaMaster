@@ -6,7 +6,6 @@
     <title>Kana Practice App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -417,11 +416,11 @@
 
                     <!-- Cover Image as Title -->
                     <div class="mb-4 z-10 w-full max-w-lg md:max-w-2xl px-2">
-                        <img src="cover.jpeg" alt="Kana Master" class="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-lighten" />
+                        <img src="cover.jpeg" alt="Kana Master" class="w-full h-auto object-contain mix-blend-multiply dark:mix-blend-lighten rounded-3xl" />
                     </div>
                     
                     <p class="text-slate-500 dark:text-slate-400 text-center text-base md:text-lg max-w-sm mb-10 leading-relaxed z-10">
-                        Learn every Hiragana &amp; Katakana character. Earn your certificate. Prove you're a Kana Master.
+                        Practice every Hiragana &amp; Katakana character. Earn your certificate. Prove you're a Kana Master.
                     </p>
 
                     <!-- CTA -->
@@ -486,18 +485,20 @@
                         </div>
 
                         <!-- Step 3 — Certificate -->
-                        <div class="group flex items-start gap-4 p-5 md:p-6 rounded-3xl border bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/50 transition-all duration-300 backdrop-blur-md">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                                <span class="text-xl font-black text-rose-500 dark:text-rose-400">3</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-black text-slate-900 dark:text-white text-lg mb-1 flex items-center gap-1.5">Earn Your Certificate <span class="text-sm">🌸</span></h3>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Master all kana and claim your official <span class="font-bold text-rose-500 dark:text-rose-400">Kana Master Certificate</span> — a beautiful cherry blossom scroll personalised with your name!</p>
-
-                                <!-- Real certificate photo fully visible -->
-                                <div class="mt-4 rounded-xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl shadow-rose-900/10 bg-rose-50 dark:bg-rose-900/10">
-                                    <img src="CertificateV2.png" alt="Kana Master Certificate preview" class="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105" />
+                        <div class="group flex flex-col p-5 md:p-6 rounded-3xl border bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/50 transition-all duration-300 backdrop-blur-md">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                    <span class="text-xl font-black text-purple-600 dark:text-purple-400">3</span>
                                 </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-black text-slate-900 dark:text-white text-lg mb-1 flex items-center gap-1.5">Earn Your Certificate <span class="text-sm">🌸</span></h3>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Master all kana and claim your official <span class="font-bold text-purple-600 dark:text-purple-400">Kana Master Certificate</span> — a beautiful scroll personalised with your name!</p>
+                                </div>
+                            </div>
+
+                            <!-- Real certificate photo fully visible & centered across card -->
+                            <div class="mt-4 w-full max-w-md mx-auto rounded-xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl shadow-purple-900/10 bg-purple-50 dark:bg-purple-900/10 flex justify-center">
+                                <img src="CertificateV3.png" alt="Kana Master Certificate preview" class="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105" />
                             </div>
                         </div>
                     </div>
@@ -891,7 +892,7 @@
             return `
             <div class="w-full max-w-lg mx-auto ${animClass} px-1 pb-12">
                 ${isEligible
-                    ? `<p class="text-center text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">📜 Download and share your official certificate</p>`
+                    ? `<p class="text-center text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">📸 Take a screenshot to save your official certificate</p>`
                     : `<p class="text-center text-xs font-medium text-indigo-600 dark:text-indigo-500 mb-3">🎯 Master all kana to receive your certificate!</p>`}
 
                 <!-- The Certificate Card -->
@@ -963,9 +964,10 @@
                         <i data-lucide="pencil" class="w-4 h-4"></i> Edit Name on Certificate
                     </button>` : ''}
                     ${isEligible ? `
-                    <button data-action="download-cert" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2 active:scale-95">
-                        <i data-lucide="download" class="w-5 h-5"></i> Download Certificate (PNG)
-                    </button>` : `
+                    <div class="w-full py-3.5 bg-indigo-50/80 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold text-center rounded-xl border border-indigo-200 dark:border-indigo-800/50 flex flex-col items-center justify-center gap-1 shadow-sm">
+                        <i data-lucide="camera" class="w-5 h-5 mb-0.5"></i>
+                        <span>Take a screenshot to save!</span>
+                    </div>` : `
                     <button data-action="go-setup" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 active:scale-95">
                         <i data-lucide="play" class="w-5 h-5"></i> Keep Practicing
                     </button>`}
@@ -1064,60 +1066,6 @@
                 saveToStorage();
                 render();
             }
-            else if (action === 'download-cert') {
-                const btn = target;
-                const originalContent = btn.innerHTML;
-                const toast = document.getElementById('toast-msg');
-                
-                // Show loading state
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generating PNG...`;
-                btn.disabled = true;
-                lucide.createIcons();
-                
-                const certCard = document.getElementById('certificate-card');
-                
-                // Use html2canvas to capture the certificate
-                setTimeout(() => {
-                    html2canvas(certCard, {
-                        scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
-                        backgroundColor: null,
-                        useCORS: true,
-                        logging: false
-                    }).then(canvas => {
-                        const link = document.createElement('a');
-                        const cleanName = (state.userName || 'Kana_Master').replace(/\s+/g, '_');
-                        link.download = `Certificate_${cleanName}.png`;
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                        
-                        toast.innerText = "Certificate downloaded successfully! 🌸";
-                        toast.classList.remove('hidden');
-                        void toast.offsetWidth;
-                        toast.classList.remove('opacity-0');
-                        
-                        setTimeout(() => {
-                            toast.classList.add('opacity-0');
-                            setTimeout(() => toast.classList.add('hidden'), 300);
-                        }, 4000);
-                    }).catch(err => {
-                        console.error('Error generating PNG:', err);
-                        toast.innerText = "Failed to generate PNG. Please take a screenshot.";
-                        toast.classList.remove('hidden');
-                        void toast.offsetWidth;
-                        toast.classList.remove('opacity-0');
-                        
-                        setTimeout(() => {
-                            toast.classList.add('opacity-0');
-                            setTimeout(() => toast.classList.add('hidden'), 300);
-                        }, 4000);
-                    }).finally(() => {
-                        // Restore button
-                        btn.innerHTML = originalContent;
-                        btn.disabled = false;
-                        lucide.createIcons();
-                    });
-                }, 100);
-            }
         });
 
         // Form submits for writing inputs
@@ -1148,28 +1096,6 @@
                 render();
             }
         });
-
-        // ── TEST DATA (remove when done) ──────────────────────────────────────
-        (function injectTestData() {
-            const allKana = [
-                'あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
-                'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
-                'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん',
-                'が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど',
-                'ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ',
-                'ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ',
-                'タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ',
-                'マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン',
-                'ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','ヂ','ヅ','デ','ド',
-                'バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'
-            ];
-            const stats = {};
-            allKana.forEach(k => { stats[k] = { correct: 3, wrong: 1, time: 15000, attempts: 4 }; });
-            localStorage.setItem('kana_master_v1', JSON.stringify({
-                stats, userName: '', theme: 'light', mode: 'mcq', kanaSet: 'both'
-            }));
-        })();
-        // ─────────────────────────────────────────────────────────────────────────
 
         // Initialize App
         loadFromStorage(); // restore saved progress before first render
